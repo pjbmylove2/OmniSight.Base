@@ -1,0 +1,69 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\Version.props" />
+  <PropertyGroup>
+    <_VersionState>$(MSBuildProjectDirectory)\Build\Version.$(Platform).$(Configuration).local.xml</_VersionState>
+  </PropertyGroup>
+
+  <Target Name="PrepareBuildVersion" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(ProductVersion)', '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'))"
+           Text="ProductVersion must have three numeric parts, such as 0.1.0." />
+    <XmlPeek XmlInputPath="$(_VersionState)" Query="/VersionState/@product" Condition="Exists('$(_VersionState)')">
+      <Output TaskParameter="Result" PropertyName="_LastProduct" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(_VersionState)" Query="/VersionState/@build" Condition="'$(_LastProduct)' == '$(ProductVersion)'">
+      <Output TaskParameter="Result" PropertyName="_LastBuild" />
+    </XmlPeek>
+    <PropertyGroup>
+      <_LastBuild Condition="'$(_LastBuild)' == ''">0</_LastBuild>
+      <_GeneratedVersion>$(IntermediateOutputPath)BuildVersion.g.cs</_GeneratedVersion>
+      <_PendingVersion>$(IntermediateOutputPath)BuildVersion.pending.xml</_PendingVersion>
+    </PropertyGroup>
+    <ItemGroup>
+      <_VersionInputs Include="@(Compile);@(EmbeddedResource);@(ReferencePath);$(MSBuildAllProjects)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Generate only when compiler inputs change or Clean removes the outputs. -->
+  <Target Name="GenerateBuildVersion" DependsOnTargets="PrepareBuildVersion"
+          Inputs="@(_VersionInputs)" Outputs="$(_GeneratedVersion);$(_PendingVersion)"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <PropertyGroup>
+      <_NextBuild>$([MSBuild]::Add('$(_LastBuild)', 1))</_NextBuild>
+    </PropertyGroup>
+    <Error Condition="'$(_NextBuild)' &gt; '65534'" Text="Build number exhausted. Increment ProductVersion." />
+    <ItemGroup>
+      <_VersionAttribute Include="System.Reflection.AssemblyVersionAttribute">
+        <_Parameter1>$(ProductVersion).0</_Parameter1>
+      </_VersionAttribute>
+      <_VersionAttribute Include="System.Reflection.AssemblyFileVersionAttribute">
+        <_Parameter1>$(ProductVersion).$(_NextBuild)</_Parameter1>
+      </_VersionAttribute>
+      <_VersionAttribute Include="System.Reflection.AssemblyInformationalVersionAttribute">
+        <_Parameter1>$(ProductVersion)+build.$(_NextBuild)</_Parameter1>
+      </_VersionAttribute>
+      <_VersionAttribute Include="System.Reflection.AssemblyConfigurationAttribute">
+        <_Parameter1>$(Configuration)</_Parameter1>
+      </_VersionAttribute>
+    </ItemGroup>
+    <WriteCodeFragment Language="C#" AssemblyAttributes="@(_VersionAttribute)" OutputFile="$(_GeneratedVersion)" />
+    <WriteLinesToFile File="$(_PendingVersion)" Overwrite="true"
+                      Lines="&lt;VersionState product=&quot;$(ProductVersion)&quot; build=&quot;$(_NextBuild)&quot; /&gt;" />
+    <Message Text="Build version $(ProductVersion).$(_NextBuild) ($(Configuration))" Importance="high" />
+  </Target>
+
+  <Target Name="IncludeBuildVersion" BeforeTargets="BeforeCompile" DependsOnTargets="GenerateBuildVersion"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <ItemGroup>
+      <Compile Include="$(_GeneratedVersion)" />
+      <FileWrites Include="$(_GeneratedVersion);$(_PendingVersion)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CommitBuildVersion" AfterTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true' And Exists('$(_PendingVersion)') And Exists('$(TargetPath)')">
+    <XmlPeek XmlInputPath="$(_PendingVersion)" Query="/VersionState/@build">
+      <Output TaskParameter="Result" PropertyName="_BuiltVersion" />
+    </XmlPeek>
+    <Copy SourceFiles="$(_PendingVersion)" DestinationFiles="$(_VersionState)" Condition="'$(_BuiltVersion)' &gt; '$(_LastBuild)'" />
+  </Target>
+</Project>

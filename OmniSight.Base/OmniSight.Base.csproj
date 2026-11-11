@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <Platform Condition="'$(Platform)' == ''">x64</Platform>
+    <ProjectGuid>{3BDF2677-B371-485B-AED1-98C70AE8925E}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>OmniSight.Base</RootNamespace>
+    <AssemblyName>OmniSight.Base</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <CodePage>65001</CodePage>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <Deterministic>true</Deterministic>
+    <DefineConstants>TRACE</DefineConstants>
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Debug-Basler'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' Or '$(Configuration)' == 'Release-Basler'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <Import Project="Pylon.local.props" Condition="Exists('Pylon.local.props')" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug-Basler' Or '$(Configuration)' == 'Release-Basler'">
+    <UseBasler>true</UseBasler>
+    <DefineConstants>$(DefineConstants);BASLER</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <PackageReference Include="Newtonsoft.Json" Version="[13.0.4]" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseBasler)' == 'true'">
+    <Reference Include="Basler.Pylon">
+      <HintPath>$(PylonAssemblyPath)</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Compile Include="Devices\Cameras\BaslerCameraAdapter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Application\ApplicationBootstrapper.cs" />
+    <Compile Include="Application\BuildInfo.cs" />
+    <Compile Include="Application\Machine.cs" />
+    <Compile Include="Configuration\AppPaths.cs" />
+    <Compile Include="Configuration\JsonConfigProvider.cs" />
+    <Compile Include="Configuration\Settings.cs" />
+    <Compile Include="Devices\DeviceFactory.cs" />
+    <Compile Include="Devices\IDevice.cs" />
+    <Compile Include="Devices\Cameras\ICameraDevice.cs" />
+    <Compile Include="Logging\LogManager.cs" />
+    <Compile Include="UI\MainForm.cs"><SubType>Form</SubType></Compile>
+    <Compile Include="UI\MainForm.Designer.cs"><DependentUpon>MainForm.cs</DependentUpon></Compile>
+    <Compile Include="UI\StartupForm.cs"><SubType>Form</SubType></Compile>
+    <Compile Include="UI\StartupForm.Designer.cs"><DependentUpon>StartupForm.cs</DependentUpon></Compile>
+    <None Include="App.config" />
+    <None Include="Version.props" />
+    <None Include="Build\Versioning.targets" />
+  </ItemGroup>
+  <Target Name="ValidatePylonReference" BeforeTargets="ResolveAssemblyReferences"
+          Condition="'$(UseBasler)' == 'true' And '$(DesignTimeBuild)' != 'true'">
+    <Error Condition="'$(PylonAssemblyPath)' == '' Or !Exists('$(PylonAssemblyPath)')"
+           Text="Set PylonAssemblyPath to the full path of your installed Basler.Pylon.dll (see README)." />
+  </Target>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="Build\Versioning.targets" />
+</Project>

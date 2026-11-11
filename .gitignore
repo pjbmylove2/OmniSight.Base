@@ -1,0 +1,11 @@
+/.vs/
+**/bin/
+**/obj/
+**/packages/
+**/Build/Version.*.local.xml
+*.user
+*.suo
+*.local.props
+*.dll
+*.exe
+*.pdb
