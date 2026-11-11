@@ -11,6 +11,7 @@ namespace OmniSight.Base.UI
         private readonly ApplicationBootstrapper _bootstrapper;
         private CancellationTokenSource _startupCancellation;
         private bool _initializing;
+        private bool _startupFailed;
 
         public StartupForm()
         {
@@ -42,12 +43,14 @@ namespace OmniSight.Base.UI
                     new Progress<SplashBranding>(ApplyBranding), _startupCancellation.Token);
                 outcome = _startupCancellation.IsCancellationRequested ? DialogResult.Cancel : DialogResult.OK;
             }
-            catch (OperationCanceledException) when (_startupCancellation.IsCancellationRequested)
+            catch (Exception) when (_startupCancellation.IsCancellationRequested)
             {
                 outcome = DialogResult.Cancel;
             }
             catch (Exception error)
             {
+                _startupFailed = true;
+                Text = BuildInfo.AppId + " Startup failed";
                 lblStatus.Text = "Startup failed. " + error.Message;
                 lblStatus.ForeColor = System.Drawing.Color.Salmon;
                 progressStartup.Visible = false;
@@ -103,7 +106,7 @@ namespace OmniSight.Base.UI
                 e.Cancel = true;
                 CancelStartup();
             }
-            else if (DialogResult == DialogResult.Cancel && !progressStartup.Visible)
+            else if (_startupFailed)
             {
                 DialogResult = DialogResult.Abort;
             }
