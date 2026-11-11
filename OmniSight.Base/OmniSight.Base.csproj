@@ -20,19 +20,26 @@
     <DefineConstants>TRACE</DefineConstants>
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Debug-Basler'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release' Or '$(Configuration)' == 'Release-Basler'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <Optimize>true</Optimize>
   </PropertyGroup>
-  <Import Project="Pylon.local.props" Condition="Exists('Pylon.local.props')" />
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug-Basler' Or '$(Configuration)' == 'Release-Basler'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug-Basler|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineConstants>DEBUG;TRACE;BASLER</DefineConstants>
     <UseBasler>true</UseBasler>
-    <DefineConstants>$(DefineConstants);BASLER</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release-Basler|x64' ">
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE;BASLER</DefineConstants>
+    <UseBasler>true</UseBasler>
+  </PropertyGroup>
+  <Import Project="Pylon.local.props" Condition="Exists('Pylon.local.props')" />
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
