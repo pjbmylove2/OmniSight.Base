@@ -5,6 +5,7 @@ namespace OmniSight.Base.Configuration
     internal sealed class SystemSettings
     {
         public bool WriteDebugLog { get; set; } = true;
+        public LanguageType Language { get; set; } = LanguageType.KOREAN;
     }
 
     internal enum CameraMode
@@ -39,7 +40,7 @@ namespace OmniSight.Base.Configuration
     {
         public string Title { get; set; } = "";
         public string ProductName { get; set; }
-        public string Subtitle { get; set; } = "FA application starter";
+        public string Subtitle { get; set; }
         public string SiteName { get; set; }
         public string EquipmentName { get; set; }
         public string CompanyName { get; set; }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using OmniSight.Base.Configuration;
 using OmniSight.Base.Devices;
 using OmniSight.Base.Logging;
+using OmniSight.Base.Localization;
 
 namespace OmniSight.Base.Application
 {
@@ -22,6 +23,14 @@ namespace OmniSight.Base.Application
 
         public Machine Machine { get; private set; }
 
+        private string SystemSettingsPath => Path.Combine(_paths.SystemPath, "SystemGeneral.json");
+
+        public LanguageType ReadStartupLanguage()
+        {
+            return JsonConfigProvider.TryReadExisting<SystemSettings>(SystemSettingsPath, _paths.PreviousConfigPath)?.Language
+                ?? LanguageType.KOREAN;
+        }
+
         public Task InitializeAsync(IProgress<(int Percent, string Status)> progress, IProgress<SplashBranding> branding, CancellationToken token)
         {
             return Task.Run(() => Initialize(progress, branding, token), token);
@@ -31,7 +40,7 @@ namespace OmniSight.Base.Application
         {
             try
             {
-                progress.Report((33, "폴더와 로그를 준비하고 있습니다..."));
+                progress.Report((33, LocalText.Get("Text.StartupForm.PrepareFolders", "폴더와 로그를 준비하고 있습니다...")));
                 _log = new LogManager(_paths.LogPath, _paths.FallbackLogPath);
                 try
                 {
@@ -39,25 +48,26 @@ namespace OmniSight.Base.Application
                 }
                 catch (Exception error) when (error is IOException || error is UnauthorizedAccessException)
                 {
-                    throw new IOException($"저장 폴더를 만들 수 없습니다. {_paths.RootPath}{Environment.NewLine}{error.Message}", error);
+                    throw new IOException(LocalText.Format("Text.StartupForm.StorageFolderError", "저장 폴더를 만들 수 없습니다. {0}", _paths.RootPath) + Environment.NewLine + error.Message, error);
                 }
                 _log.System($"[Boot] Storage root: {_paths.RootPath}");
                 _log.System($"{BuildInfo.AppId} started. {BuildInfo.DisplayText}");
                 token.ThrowIfCancellationRequested();
 
-                progress.Report((66, "설정을 읽고 있습니다..."));
+                progress.Report((66, LocalText.Get("Text.StartupForm.LoadSettings", "설정을 읽고 있습니다...")));
+                var system = JsonConfigProvider.LoadOrCreate(SystemSettingsPath, new SystemSettings(), _paths.PreviousConfigPath);
+                LocalizationManager.ChangeLanguage(system.Language);
+                _log.WriteDebugLog = system.WriteDebugLog;
                 var display = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.SystemPath, "SplashBranding.json"), new SplashBranding(), _paths.PreviousConfigPath);
                 _splashLogo = LoadSplashLogo(display.LogoPath);
                 branding.Report(display);
-                var system = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.SystemPath, "SystemGeneral.json"), new SystemSettings(), _paths.PreviousConfigPath);
-                _log.WriteDebugLog = system.WriteDebugLog;
                 var camera = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.CameraDevicePath, "Camera.json"), new CameraSettings(), _paths.PreviousConfigPath);
                 camera.Validate();
                 _log.Debug("Configuration loaded.");
                 _log.System($"Camera mode: {camera.Mode}.");
                 token.ThrowIfCancellationRequested();
 
-                progress.Report((95, "장비를 초기화하고 있습니다..."));
+                progress.Report((95, LocalText.Get("Text.StartupForm.InitializeDevices", "장비를 초기화하고 있습니다...")));
                 Machine = new Machine(DeviceFactory.Create(camera), _log);
                 Machine.Initialize(token);
             }

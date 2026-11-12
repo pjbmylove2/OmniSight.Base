@@ -106,7 +106,7 @@ internal static class SplashBrandingChecks
         }
     }
 
-    private static void RunSplash(string root, string appId, string json, Action<string> prepare, Action<StartupForm, string> inspect)
+    internal static void RunSplash(string root, string appId, string json, Action<string> prepare, Action<StartupForm, string> inspect, bool expectFailure = false)
     {
         string storage = Path.Combine(root, "branding");
         string appRoot = Path.Combine(storage, "Company", appId);
@@ -131,7 +131,7 @@ internal static class SplashBrandingChecks
             timer.Tick += (sender, args) =>
             {
                 var panel = form.Controls["pnlProgress"];
-                if (((StartupProgressBar)panel.Controls["progressBoot"]).Value == 100)
+                if (expectFailure ? !panel.Controls["progressBoot"].Visible : ((StartupProgressBar)panel.Controls["progressBoot"]).Value == 100)
                 {
                     timer.Stop();
                     try
@@ -143,8 +143,9 @@ internal static class SplashBrandingChecks
                     {
                         failure = error;
                     }
+                    if (expectFailure) { form.Close(); }
                 }
-                else if (DateTime.UtcNow > deadline || form.Text.EndsWith(" Startup failed", StringComparison.Ordinal))
+                else if (DateTime.UtcNow > deadline || !panel.Controls["progressBoot"].Visible)
                 {
                     timer.Stop();
                     form.Close();
@@ -158,7 +159,7 @@ internal static class SplashBrandingChecks
             {
                 throw new InvalidOperationException("Splash inspection failed for " + appId, failure);
             }
-            Check(result == DialogResult.OK && inspected, "configured splash completed for " + appId);
+            Check(result == (expectFailure ? DialogResult.Abort : DialogResult.OK) && inspected, "configured splash completed for " + appId);
         }
     }
 

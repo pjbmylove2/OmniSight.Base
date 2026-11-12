@@ -1,0 +1,341 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "key": "Text.MessageDialogForm.AutoCloseCountdown",
+      "ko": "자동 닫기  {0}초",
+      "en": "Auto close  {0}s",
+      "zh": "自动关闭  {0}秒",
+      "pl": "Automatyczne zamknięcie  {0} s",
+      "binding": ""
+    },
+    {
+      "key": "Text.MessageDialogForm.AutoCloseRange",
+      "ko": "자동 닫힘 시간은 0 이상의 초 단위 값이어야 합니다.",
+      "en": "Auto-close time must be 0 or more seconds.",
+      "zh": "自动关闭时间必须是 0 以上的秒数。",
+      "pl": "Czas automatycznego zamknięcia musi wynosić 0 lub więcej sekund.",
+      "binding": ""
+    },
+    {
+      "key": "Text.MessageDialogForm.NoMessage",
+      "ko": "표시할 메시지가 없습니다.",
+      "en": "No message to display.",
+      "zh": "没有要显示的消息。",
+      "pl": "Brak wiadomości do wyświetlenia.",
+      "binding": ""
+    },
+    {
+      "key": "Text.MessageDialogForm.NoticeTitle",
+      "ko": "알림",
+      "en": "Notice",
+      "zh": "提示",
+      "pl": "Powiadomienie",
+      "binding": ""
+    },
+    {
+      "key": "Text.MessageDialogForm.SeverityConfirmation",
+      "ko": "확인",
+      "en": "CONFIRMATION",
+      "zh": "确认",
+      "pl": "POTWIERDZENIE",
+      "binding": ""
+    },
+    {
+      "key": "Text.MessageDialogForm.SeverityCriticalAlarm",
+      "ko": "중대 알람",
+      "en": "CRITICAL ALARM",
+      "zh": "严重报警",
+      "pl": "ALARM KRYTYCZNY",
+      "binding": ""
+    },
+    {
+      "key": "Text.MessageDialogForm.SeverityError",
+      "ko": "오류",
+      "en": "ERROR",
+      "zh": "错误",
+      "pl": "BŁĄD",
+      "binding": ""
+    },
+    {
+      "key": "Text.MessageDialogForm.SeverityInformation",
+      "ko": "정보",
+      "en": "INFORMATION",
+      "zh": "信息",
+      "pl": "INFORMACJA",
+      "binding": ""
+    },
+    {
+      "key": "Text.MessageDialogForm.SeverityWarning",
+      "ko": "경고",
+      "en": "WARNING",
+      "zh": "警告",
+      "pl": "OSTRZEŻENIE",
+      "binding": ""
+    },
+    {
+      "key": "Text.MessageDialogForm.UnsupportedButtons",
+      "ko": "MessageDialog는 OK, OKCancel, YesNo 버튼 조합을 지원합니다.",
+      "en": "MessageDialog supports OK, OKCancel and YesNo button sets.",
+      "zh": "MessageDialog 支持 OK、OKCancel、YesNo 按钮组合。",
+      "pl": "MessageDialog obsługuje zestawy przycisków OK, OKCancel i YesNo.",
+      "binding": ""
+    },
+    {
+      "key": "Text.MessageDialogForm.UnsupportedSeverity",
+      "ko": "지원하지 않는 메시지 단계입니다.",
+      "en": "Unsupported message level.",
+      "zh": "不支持的消息级别。",
+      "pl": "Nieobsługiwany poziom wiadomości.",
+      "binding": ""
+    },
+    {
+      "key": "Text.Program.FatalErrorTitle",
+      "ko": "프로그램 오류",
+      "en": "Application error",
+      "zh": "应用程序错误",
+      "pl": "Błąd aplikacji",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.CancelingCaption",
+      "ko": "초기화 취소 중",
+      "en": "Canceling initialization",
+      "zh": "正在取消初始化",
+      "pl": "Anulowanie inicjalizacji",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.Close",
+      "ko": "닫기",
+      "en": "Close",
+      "zh": "关闭",
+      "pl": "Zamknij",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.CloseAfterCurrentStep",
+      "ko": "현재 초기화 단계가 끝나면 창이 닫힙니다.",
+      "en": "The window will close when the current initialization step finishes.",
+      "zh": "当前初始化步骤结束后窗口将关闭。",
+      "pl": "Okno zamknie się po zakończeniu bieżącego kroku inicjalizacji.",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.ErrorCloseHint",
+      "ko": "오류를 확인한 뒤 창을 닫으십시오.",
+      "en": "Review the error, then close this window.",
+      "zh": "请查看错误后关闭窗口。",
+      "pl": "Sprawdź błąd, a następnie zamknij okno.",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.FailureTitle",
+      "ko": "{0} 시작 실패",
+      "en": "{0} Startup failed",
+      "zh": "{0} 启动失败",
+      "pl": "Nie udało się uruchomić {0}",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.InitCompletedCaption",
+      "ko": "초기화 완료 (100%)",
+      "en": "Initialization complete (100%)",
+      "zh": "初始化完成 (100%)",
+      "pl": "Inicjalizacja zakończona (100%)",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.InitCompletedStatus",
+      "ko": "프로그램 초기화 완료. 메인 화면을 시작합니다.",
+      "en": "Program initialization complete. Starting the main screen.",
+      "zh": "程序初始化完成。正在启动主画面。",
+      "pl": "Inicjalizacja programu zakończona. Uruchamianie ekranu głównego.",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.InitFailedCaption",
+      "ko": "초기화 실패",
+      "en": "Initialization failed",
+      "zh": "初始化失败",
+      "pl": "Błąd inicjalizacji",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.InitializeDevices",
+      "ko": "장비를 초기화하고 있습니다...",
+      "en": "Initializing devices...",
+      "zh": "正在初始化设备...",
+      "pl": "Inicjalizowanie urządzeń...",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.Initializing",
+      "ko": "초기화 중",
+      "en": "Initializing",
+      "zh": "初始化中",
+      "pl": "Inicjalizacja",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.LoadSettings",
+      "ko": "설정을 읽고 있습니다...",
+      "en": "Loading settings...",
+      "zh": "正在读取设置...",
+      "pl": "Wczytywanie ustawień...",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.LogoSuffix",
+      "ko": " 로고",
+      "en": " logo",
+      "zh": " 标志",
+      "pl": " logo",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.PrepareFolders",
+      "ko": "폴더와 로그를 준비하고 있습니다...",
+      "en": "Preparing folders and logs...",
+      "zh": "正在准备文件夹和日志...",
+      "pl": "Przygotowywanie folderów i dzienników...",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.StatusAccessibleName",
+      "ko": "초기화 진행 상태",
+      "en": "Initialization status",
+      "zh": "初始化状态",
+      "pl": "Stan inicjalizacji",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.StorageFolderError",
+      "ko": "저장 폴더를 만들 수 없습니다. {0}",
+      "en": "Cannot create the storage folder. {0}",
+      "zh": "无法创建存储文件夹。{0}",
+      "pl": "Nie można utworzyć folderu danych. {0}",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.Version",
+      "ko": "버전 {0} · {1}",
+      "en": "Version {0} · {1}",
+      "zh": "版本 {0} · {1}",
+      "pl": "Wersja {0} · {1}",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupForm.WindowTitle",
+      "ko": "{0} 시작",
+      "en": "{0} Startup",
+      "zh": "启动 {0}",
+      "pl": "Uruchamianie {0}",
+      "binding": ""
+    },
+    {
+      "key": "Text.StartupVisuals.ProgressAccessibleName",
+      "ko": "초기화 진행률",
+      "en": "Initialization progress",
+      "zh": "初始化进度",
+      "pl": "Postęp inicjalizacji",
+      "binding": ""
+    },
+    {
+      "key": "UI.MessageDialogForm.btnCancel",
+      "ko": "취소(&C)",
+      "en": "Cancel(&C)",
+      "zh": "取消(&C)",
+      "pl": "Anuluj(&C)",
+      "binding": "Text"
+    },
+    {
+      "key": "UI.MessageDialogForm.btnNo",
+      "ko": "아니오(&N)",
+      "en": "No(&N)",
+      "zh": "否(&N)",
+      "pl": "Nie(&N)",
+      "binding": "Text"
+    },
+    {
+      "key": "UI.MessageDialogForm.btnOk",
+      "ko": "확인(&O)",
+      "en": "OK(&O)",
+      "zh": "确认(&O)",
+      "pl": "OK(&O)",
+      "binding": "Text"
+    },
+    {
+      "key": "UI.MessageDialogForm.btnYes",
+      "ko": "예(&Y)",
+      "en": "Yes(&Y)",
+      "zh": "是(&Y)",
+      "pl": "Tak(&Y)",
+      "binding": "Text"
+    },
+    {
+      "key": "UI.StartupForm.btnCancel",
+      "ko": "취소",
+      "en": "Cancel",
+      "zh": "取消",
+      "pl": "Anuluj",
+      "binding": "Text"
+    },
+    {
+      "key": "UI.StartupForm.lblEquipmentName",
+      "ko": "공장 자동화",
+      "en": "Factory Automation",
+      "zh": "工厂自动化",
+      "pl": "Automatyka przemysłowa",
+      "binding": "Text"
+    },
+    {
+      "key": "UI.StartupForm.lblFooter",
+      "ko": "산업용 비전 시스템",
+      "en": "Industrial Vision Systems",
+      "zh": "工业视觉系统",
+      "pl": "Przemysłowe systemy wizyjne",
+      "binding": "Text"
+    },
+    {
+      "key": "UI.StartupForm.lblProgressHint",
+      "ko": "초기화가 끝나면 메인 화면으로 이동합니다.",
+      "en": "When initialization finishes, the main screen opens.",
+      "zh": "初始化完成后将进入主画面。",
+      "pl": "Po zakończeniu inicjalizacji zostanie otwarty ekran główny.",
+      "binding": "Text"
+    },
+    {
+      "key": "UI.StartupForm.lblSiteName",
+      "ko": "비전 검사 시스템",
+      "en": "VISION INSPECTION SYSTEM",
+      "zh": "视觉检测系统",
+      "pl": "SYSTEM INSPEKCJI WIZYJNEJ",
+      "binding": "Text"
+    },
+    {
+      "key": "UI.StartupForm.lblStatus",
+      "ko": "시스템 시작을 준비하고 있습니다...",
+      "en": "Preparing system start...",
+      "zh": "正在准备系统启动...",
+      "pl": "Przygotowywanie uruchomienia systemu...",
+      "binding": "Text"
+    },
+    {
+      "key": "UI.StartupForm.lblStatusCaption",
+      "ko": "초기화 중 (0%)",
+      "en": "Initializing (0%)",
+      "zh": "初始化中 (0%)",
+      "pl": "Inicjalizacja (0%)",
+      "binding": "Text"
+    },
+    {
+      "key": "UI.StartupForm.lblSubtitle",
+      "ko": "FA 설비 시작 템플릿",
+      "en": "FA application starter",
+      "zh": "工厂自动化应用模板",
+      "pl": "Szablon aplikacji automatyki",
+      "binding": "Text"
+    }
+  ]
+}

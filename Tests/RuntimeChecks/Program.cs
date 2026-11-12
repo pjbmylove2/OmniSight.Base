@@ -9,16 +9,20 @@ using OmniSight.Base.Application;
 using OmniSight.Base.Devices;
 using OmniSight.Base.Logging;
 using OmniSight.Base.UI;
+using OmniSight.Base.Localization;
+using OmniSight.Base.UI.Utils;
 
 internal static class Program
 {
     [STAThread]
-    private static void Main()
+    private static int Main()
     {
         string root = Path.Combine(Path.GetTempPath(), "OmniSight.Base.Checks-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {
+            LocalizationManager.Initialize();
+            FontManager.Initialize();
             using (var log = new LogManager(root))
             {
                 InitializationFailureReleasesInReverseOrder(log);
@@ -35,10 +39,21 @@ internal static class Program
             LoggingChecks.Run(root);
             PathChecks.Run(root);
             SplashBrandingChecks.Run(root);
-            Console.WriteLine("PASS: machine lifecycle (6), logging (3), storage layout and settings migration, and MainForm/StartupForm layout and splash branding.");
+            LocalizedUiChecks.Run(root);
+            Console.WriteLine("PASS: machine lifecycle (6), logging (3), storage layout and settings migration, and MainForm/StartupForm layout, splash branding and four-language dialogs.");
+            return 0;
+        }
+        catch (Exception error)
+        {
+            for (Exception current = error; current != null; current = current.InnerException)
+            {
+                Console.Error.WriteLine(current.GetType().Name + ": " + current.Message);
+            }
+            return 1;
         }
         finally
         {
+            FontManager.Release();
             Directory.Delete(root, true);
         }
     }

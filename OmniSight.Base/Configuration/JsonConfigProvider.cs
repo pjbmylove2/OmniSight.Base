@@ -24,14 +24,39 @@ namespace OmniSight.Base.Configuration
                     CreateConfig(filePath, previousFile, defaults);
                 }
 
-                var value = JsonConvert.DeserializeObject<T>(File.ReadAllText(filePath, Utf8), Settings);
-                return value ?? throw new InvalidDataException("Expected a JSON object.");
+                return ReadConfig<T>(filePath);
             }
             catch (Exception error) when (error is IOException || error is UnauthorizedAccessException ||
                                           error is JsonException || error is DecoderFallbackException)
             {
                 throw new InvalidDataException($"{Path.GetFileName(filePath)}: {error.Message}", error);
             }
+        }
+
+        public static T TryReadExisting<T>(string filePath, string previousConfigPath) where T : class
+        {
+            string path = File.Exists(filePath) ? filePath : Path.Combine(previousConfigPath, Path.GetFileName(filePath));
+            if (!File.Exists(path))
+            {
+                return null;
+            }
+
+            try
+            {
+                return ReadConfig<T>(path);
+            }
+            catch (Exception error) when (error is IOException || error is UnauthorizedAccessException ||
+                                          error is InvalidDataException || error is JsonException || error is DecoderFallbackException)
+            {
+                // The boot sequence reads the configuration again and reports the full error.
+                return null;
+            }
+        }
+
+        private static T ReadConfig<T>(string filePath) where T : class
+        {
+            var value = JsonConvert.DeserializeObject<T>(File.ReadAllText(filePath, Utf8), Settings);
+            return value ?? throw new InvalidDataException("Expected a JSON object.");
         }
 
         private static void CreateConfig<T>(string filePath, string previousFile, T defaults)

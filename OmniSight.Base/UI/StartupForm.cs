@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using OmniSight.Base.Application;
 using OmniSight.Base.Configuration;
+using OmniSight.Base.Localization;
+using OmniSight.Base.UI.Utils;
 
 namespace OmniSight.Base.UI
 {
@@ -26,9 +28,9 @@ namespace OmniSight.Base.UI
         internal StartupForm(ApplicationBootstrapper bootstrapper) : this()
         {
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
-            Text = BuildInfo.AppId + " Startup";
+            LocalizationManager.ChangeLanguage(_bootstrapper.ReadStartupLanguage());
             lblProductName.Text = BuildInfo.AppId;
-            lblVersion.Text = BuildInfo.DisplayText;
+            RefreshLocalization();
         }
 
         protected override async void OnShown(EventArgs e)
@@ -55,8 +57,8 @@ namespace OmniSight.Base.UI
                     cancellation.Token.ThrowIfCancellationRequested();
                     progressBoot.Value = 100;
                     progressBoot.IsMarquee = false;
-                    lblStatusCaption.Text = "초기화 완료 (100%)";
-                    lblStatus.Text = "프로그램 초기화가 완료되었습니다.";
+                    lblStatusCaption.Text = LocalText.Get("Text.StartupForm.InitCompletedCaption", "초기화 완료 (100%)");
+                    lblStatus.Text = LocalText.Get("Text.StartupForm.InitCompletedStatus", "프로그램 초기화 완료. 메인 화면을 시작합니다.");
                     await Task.Delay(500, cancellation.Token);
                     outcome = DialogResult.OK;
                 }
@@ -94,7 +96,7 @@ namespace OmniSight.Base.UI
             if (CanUpdateProgress() && progressBoot.Value < 100)
             {
                 progressBoot.Value = progress.Percent;
-                lblStatusCaption.Text = $"초기화 중 ({progress.Percent}%)";
+                lblStatusCaption.Text = LocalText.Get("Text.StartupForm.Initializing", "초기화 중") + $" ({progress.Percent}%)";
                 lblStatus.Text = progress.Status;
             }
         }
@@ -106,8 +108,12 @@ namespace OmniSight.Base.UI
                 return;
             }
 
+            RefreshLocalization();
             lblProductName.Text = TextOrDefault(branding.ProductName, TextOrDefault(branding.Title, BuildInfo.AppId));
-            lblSubtitle.Text = branding.Subtitle;
+            if (branding.Subtitle != null && branding.Subtitle != "FA application starter")
+            {
+                lblSubtitle.Text = branding.Subtitle;
+            }
             lblSiteName.Text = TextOrDefault(branding.SiteName, lblSiteName.Text);
             lblEquipmentName.Text = TextOrDefault(branding.EquipmentName, lblEquipmentName.Text);
             lblCompanyName.Text = TextOrDefault(branding.CompanyName, lblCompanyName.Text);
@@ -116,8 +122,18 @@ namespace OmniSight.Base.UI
             pnlHero.SecondaryColor = ParseColor(branding.BrandPanelColor, pnlHero.SecondaryColor);
             _logoText = branding.LogoText?.Trim();
             picLogo.Image = _bootstrapper.TakeSplashLogo();
-            picLogo.AccessibleName = TextOrDefault(_logoText, lblCompanyName.Text) + " 로고";
+            picLogo.AccessibleName = TextOrDefault(_logoText, lblCompanyName.Text) + LocalText.Get("Text.StartupForm.LogoSuffix", " 로고");
             picLogo.Invalidate();
+        }
+
+        private void RefreshLocalization()
+        {
+            FontManager.Apply(this);
+            UiLocalization.Apply(this);
+            Text = LocalText.Format("Text.StartupForm.WindowTitle", "{0} 시작", BuildInfo.AppId);
+            lblVersion.Text = LocalText.Format("Text.StartupForm.Version", "버전 {0} · {1}", BuildInfo.FileVersion, BuildInfo.Configuration);
+            lblStatus.AccessibleName = LocalText.Get("Text.StartupForm.StatusAccessibleName", "초기화 진행 상태");
+            progressBoot.AccessibleName = LocalText.Get("Text.StartupVisuals.ProgressAccessibleName", "초기화 진행률");
         }
 
         private static string TextOrDefault(string text, string fallback)
@@ -150,7 +166,7 @@ namespace OmniSight.Base.UI
                 using (var halo = new SolidBrush(Color.FromArgb(42, Color.White)))
                 using (var outline = new Pen(Color.FromArgb(229, Color.White), 3F))
                 using (var lens = new SolidBrush(Color.FromArgb(30, 191, 93)))
-                using (var font = new Font("Segoe UI", 21F, FontStyle.Bold, GraphicsUnit.Pixel))
+                using (var font = FontManager.CreateFont(21F, FontStyle.Bold, GraphicsUnit.Pixel))
                 using (var format = new StringFormat
                 {
                     Alignment = StringAlignment.Center,
@@ -184,14 +200,14 @@ namespace OmniSight.Base.UI
         private void ShowStartupFailure(Exception error)
         {
             _startupFailed = true;
-            Text = BuildInfo.AppId + " Startup failed";
-            lblStatusCaption.Text = "초기화 실패";
+            Text = LocalText.Format("Text.StartupForm.FailureTitle", "{0} 시작 실패", BuildInfo.AppId);
+            lblStatusCaption.Text = LocalText.Get("Text.StartupForm.InitFailedCaption", "초기화 실패");
             lblStatus.Text = error.Message;
             lblStatus.ForeColor = Color.Salmon;
             progressBoot.IsMarquee = false;
             progressBoot.Visible = false;
-            lblProgressHint.Text = "오류를 확인한 뒤 창을 닫으십시오.";
-            btnCancel.Text = "닫기";
+            lblProgressHint.Text = LocalText.Get("Text.StartupForm.ErrorCloseHint", "오류를 확인한 뒤 창을 닫으십시오.");
+            btnCancel.Text = LocalText.Get("Text.StartupForm.Close", "닫기");
         }
 
         private void BtnCancel_Click(object sender, EventArgs e)
@@ -208,8 +224,8 @@ namespace OmniSight.Base.UI
                 _startupCancellation.Cancel();
                 btnCancel.Enabled = false;
                 progressBoot.IsMarquee = false;
-                lblStatusCaption.Text = "초기화 취소 중";
-                lblStatus.Text = "현재 초기화 단계가 끝나면 창이 닫힙니다.";
+                lblStatusCaption.Text = LocalText.Get("Text.StartupForm.CancelingCaption", "초기화 취소 중");
+                lblStatus.Text = LocalText.Get("Text.StartupForm.CloseAfterCurrentStep", "현재 초기화 단계가 끝나면 창이 닫힙니다.");
                 lblProgressHint.Text = string.Empty;
             }
             else if (_startupFailed)

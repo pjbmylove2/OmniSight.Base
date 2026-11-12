@@ -5,6 +5,8 @@ using System.Windows.Forms;
 using OmniSight.Base.Application;
 using OmniSight.Base.Configuration;
 using OmniSight.Base.UI;
+using OmniSight.Base.UI.Utils;
+using OmniSight.Base.Localization;
 using WinForms = System.Windows.Forms.Application;
 
 namespace OmniSight.Base
@@ -20,6 +22,8 @@ namespace OmniSight.Base
 
             try
             {
+                LocalizationManager.Initialize();
+                FontManager.Initialize();
                 var paths = new PathManager(BuildInfo.AppId);
                 using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
                 using (var instance = new Mutex(false, $@"Global\{identity.User.Value}.{BuildInfo.AppId.ToUpperInvariant()}"))
@@ -41,8 +45,13 @@ namespace OmniSight.Base
             }
             catch (Exception error)
             {
-                MessageBox.Show(error.Message, BuildInfo.AppId, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageDialog.Show(error.Message,
+                    LocalText.Get("Text.Program.FatalErrorTitle", "프로그램 오류"), MessageSeverity.Error);
                 return 1;
+            }
+            finally
+            {
+                FontManager.Release();
             }
         }
 

@@ -151,7 +151,7 @@
             this.lblFooter.Name = "lblFooter";
             this.lblFooter.Size = new System.Drawing.Size(210, 19);
             this.lblFooter.TabIndex = 4;
-            this.lblFooter.Text = "Industrial Vision Systems";
+            this.lblFooter.Text = "산업용 비전 시스템";
             this.lblFooter.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             //
             // pnlHero
@@ -192,7 +192,7 @@
             this.lblSiteName.Name = "lblSiteName";
             this.lblSiteName.Size = new System.Drawing.Size(410, 22);
             this.lblSiteName.TabIndex = 1;
-            this.lblSiteName.Text = "VISION INSPECTION SYSTEM";
+            this.lblSiteName.Text = "비전 검사 시스템";
             //
             // lblCompanyName
             //
@@ -213,9 +213,9 @@
             this.lblProductName.BackColor = System.Drawing.Color.Transparent;
             this.lblProductName.Font = new System.Drawing.Font("Segoe UI", 25F, System.Drawing.FontStyle.Bold);
             this.lblProductName.ForeColor = System.Drawing.Color.White;
-            this.lblProductName.Location = new System.Drawing.Point(28, 180);
+            this.lblProductName.Location = new System.Drawing.Point(28, 176);
             this.lblProductName.Name = "lblProductName";
-            this.lblProductName.Size = new System.Drawing.Size(594, 46);
+            this.lblProductName.Size = new System.Drawing.Size(594, 54);
             this.lblProductName.TabIndex = 3;
             this.lblProductName.Text = "OmniSight.Base";
             this.lblProductName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -230,7 +230,7 @@
             this.lblSubtitle.Name = "lblSubtitle";
             this.lblSubtitle.Size = new System.Drawing.Size(574, 25);
             this.lblSubtitle.TabIndex = 4;
-            this.lblSubtitle.Text = "FA application starter";
+            this.lblSubtitle.Text = "FA 설비 시작 템플릿";
             this.lblSubtitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             //
             // lblEquipmentName
@@ -243,7 +243,7 @@
             this.lblEquipmentName.Name = "lblEquipmentName";
             this.lblEquipmentName.Size = new System.Drawing.Size(450, 18);
             this.lblEquipmentName.TabIndex = 5;
-            this.lblEquipmentName.Text = "Factory Automation";
+            this.lblEquipmentName.Text = "공장 자동화";
             this.lblEquipmentName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             //
             // StartupForm

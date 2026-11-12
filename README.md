@@ -24,7 +24,7 @@ FA 설비의 WinForms 시작 프로젝트입니다. **Visual Studio 2022 · .NET
 
 | 위치 | 용도 |
 |---|---|
-| `SYSTEM/SystemGeneral.json` | 디버그 로그 사용 여부 |
+| `SYSTEM/SystemGeneral.json` | UI 언어와 디버그 로그 사용 여부 |
 | `SYSTEM/SplashBranding.json` | 시작 화면의 문구, 로고, 배경색 |
 | `MODEL` | 모델·레시피 |
 | `LOG` | 로컬 날짜별 로그. 예를 들어 `LOG/yyyy/MM/dd/yyyy-MM-dd_System.log` |
@@ -62,6 +62,43 @@ FA 설비의 WinForms 시작 프로젝트입니다. **Visual Studio 2022 · .NET
 - `LogoPath`에는 절대 경로를 지정할 수 있습니다. 상대 경로는 저장 폴더 루트에서 먼저 찾고, 거기에 파일이 없으면 실행 파일 폴더에서 찾습니다. 파일이 없거나 읽기 실패하면 `LogoText`로 대체합니다.
 - 두 색상은 상단 배경의 그라데이션에 적용합니다. `#RRGGBB` 형식으로 지정하며, 값이 없거나 잘못됐으면 디자이너 색을 사용합니다.
 
+## UI 언어와 글꼴
+
+`SYSTEM/SystemGeneral.json`에 `Language`를 추가하고 앱을 다시 시작합니다.
+
+```json
+{
+  "WriteDebugLog": true,
+  "Language": "ENGLISH"
+}
+```
+
+`KOREAN`(기본), `ENGLISH`, `CHINESE`(간체), `POLISH`를 사용할 수 있습니다. 시작 화면의 기본 문구와 메시지 창의 버튼·상태·자동 닫기 안내가 선택 언어를 따릅니다. `SplashBranding.json`에 직접 넣은 제목과 문구는 입력한 값으로 표시합니다. 이전 템플릿의 기본 부제인 FA application starter는 선택 언어의 기본 부제로 표시됩니다.
+
+- 정적 캡션은 `OmniSight.Base/Localization/catalog.json`에 `UI.<폼 또는 컨트롤 클래스>.<컨트롤 Name>` 키와 `"binding": "Text"`로 등록합니다. 폼 제목은 컨트롤 이름 자리에 `$this`를 씁니다.
+- 상태 메시지는 `LocalText.Get(key, korean)` 또는 `LocalText.Format(key, korean, args)`로 조회합니다. 카탈로그의 `ko`, `en`, `zh`, `pl`에 같은 자리표시자를 사용합니다. 수정 후 빌드하면 새 카탈로그가 실행 파일에 포함됩니다.
+- 새 WinForms 화면에서 `InitializeComponent()` 다음에 `FontManager.Apply(this)`와 `UiLocalization.Apply(this)`를 호출합니다. 코드에서 언어를 바꿀 때는 `LocalizationManager.ChangeLanguage(...)` 후 같은 두 메서드를 다시 호출합니다.
+- 한국어·영어·폴란드어 화면은 임베디드 나눔고딕을 사용합니다. 간체 중국어 화면은 Windows의 Microsoft YaHei UI를 사용하므로 현장 PC에 해당 글꼴을 설치합니다. [나눔고딕 SIL OFL 1.1](OmniSight.Base/Resources/NanumGothic-OFL.txt)은 빌드 출력에도 포함됩니다.
+
+## 공통 메시지 창
+
+`OmniSight.Base.UI.Utils.MessageDialog.Show`는 `OK`, `OKCancel`, `YesNo` 버튼 조합과 정보·경고·오류·중대 알람 표시를 지원합니다. 표시할 문장은 `LocalText`에서 조회한 뒤 넘깁니다.
+
+```csharp
+using System.Windows.Forms;
+using OmniSight.Base.Localization;
+using OmniSight.Base.UI.Utils;
+
+// 폼의 UI 이벤트 안에서 호출합니다. 작업 스레드에서는 활성 폼을 owner로 전달합니다.
+DialogResult answer = MessageDialog.Show(
+    LocalText.Get("Text.Settings.ConfirmSave", "설정을 저장할까요?"),
+    level: MessageSeverity.Warning,
+    buttons: MessageBoxButtons.YesNo,
+    owner: this);
+```
+
+`autoCloseSeconds`를 지정하면 시간이 지난 뒤 `OK` 창은 `OK`, `OKCancel` 창은 `Cancel`, `YesNo` 창은 `No`를 반환합니다. `log: logManager`를 넘기면 메시지도 로그에 기록합니다.
+
 ## Basler 사용
 
 기본 구성은 장치 없이 부팅합니다. 실제 Basler를 사용할 때는 [Basler pylon](https://docs.baslerweb.com/pylon-software-suite)의 x64 SDK·런타임과 카메라 드라이버를 설치합니다. 컴파일 기준으로 확인한 `Basler.Pylon.dll`의 파일 버전은 **5.2.0.13457**입니다.
@@ -89,4 +126,4 @@ msbuild Tests/RuntimeChecks/RuntimeChecks.csproj /restore /p:Configuration=Debug
 .\Tests\RuntimeChecks\bin\Debug\RuntimeChecks.exe
 ```
 
-테스트는 가상 장치의 초기화·시작·종료, 동시 로그 기록과 저장 장애 복구, 큐가 찼을 때 알람 우선 기록, 저장 폴더 구성과 기존 설정 복사, 메인 화면과 스플래시 배치 및 브랜딩을 확인합니다.
+테스트는 가상 장치의 초기화·시작·종료, 동시 로그 기록과 저장 장애 복구, 큐가 찼을 때 알람 우선 기록, 저장 폴더 구성과 기존 설정 복사, 스플래시 배치와 브랜딩, 네 언어의 시작 화면과 메시지 창을 확인합니다.
