@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
@@ -8,23 +9,30 @@ namespace OmniSight.Base.Configuration
 {
     internal static class JsonConfigProvider
     {
+        internal static readonly object SaveLock = new object();
         private static readonly Encoding Utf8 = new UTF8Encoding(false, true);
         private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
         {
             Converters = { new StringEnumConverter { AllowIntegerValues = false } }
         };
 
-        public static T LoadOrCreate<T>(string filePath, T defaults, string previousConfigPath) where T : class
+        public static T LoadOrCreate<T>(string filePath, T defaults, string previousConfigPath) where T : class =>
+            LoadOrCreate(filePath, defaults, previousConfigPath, out _);
+
+        internal static T LoadOrCreate<T>(string filePath, T defaults, string previousConfigPath, out string json, Action<T> validate = null) where T : class
         {
             try
             {
                 if (!File.Exists(filePath))
                 {
-                    string previousFile = Path.Combine(previousConfigPath, Path.GetFileName(filePath));
-                    CreateConfig(filePath, previousFile, defaults);
+                    string previousFile = PreviousFile(filePath, previousConfigPath);
+                    CreateConfig(filePath, previousFile, defaults, validate);
                 }
 
-                return ReadConfig<T>(filePath);
+                json = ReadText(filePath);
+                T loaded = Deserialize<T>(json);
+                validate?.Invoke(loaded);
+                return loaded;
             }
             catch (Exception error) when (error is IOException || error is UnauthorizedAccessException ||
                                           error is JsonException || error is DecoderFallbackException)
@@ -35,7 +43,7 @@ namespace OmniSight.Base.Configuration
 
         public static T TryReadExisting<T>(string filePath, string previousConfigPath) where T : class
         {
-            string path = File.Exists(filePath) ? filePath : Path.Combine(previousConfigPath, Path.GetFileName(filePath));
+            string path = File.Exists(filePath) ? filePath : PreviousFile(filePath, previousConfigPath);
             if (!File.Exists(path))
             {
                 return null;
@@ -55,33 +63,71 @@ namespace OmniSight.Base.Configuration
 
         private static T ReadConfig<T>(string filePath) where T : class
         {
-            var value = JsonConvert.DeserializeObject<T>(File.ReadAllText(filePath, Utf8), Settings);
+            return Deserialize<T>(ReadText(filePath));
+        }
+
+        internal static T Deserialize<T>(string json) where T : class
+        {
+            var value = JsonConvert.DeserializeObject<T>(json, Settings);
             return value ?? throw new InvalidDataException("Expected a JSON object.");
         }
 
-        private static void CreateConfig<T>(string filePath, string previousFile, T defaults)
+        internal static string Serialize<T>(T value) => JsonConvert.SerializeObject(value, Formatting.Indented, Settings);
+
+        internal static string ReadText(string filePath) => File.ReadAllText(filePath, Utf8);
+
+        internal static string PreviousFile(string filePath, string previousConfigPath) =>
+            previousConfigPath == null ? null : Path.Combine(previousConfigPath, Path.GetFileName(filePath));
+
+        private static void CreateConfig<T>(string filePath, string previousFile, T defaults, Action<T> validate) where T : class
         {
-            string temporaryPath = filePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
             try
             {
-                if (File.Exists(previousFile))
-                {
-                    File.Copy(previousFile, temporaryPath);
-                }
-                else
-                {
-                    File.WriteAllText(temporaryPath, JsonConvert.SerializeObject(defaults, Formatting.Indented, Settings), Utf8);
-                }
-
-                File.Move(temporaryPath, filePath);
+                string json = File.Exists(previousFile) ? ReadText(previousFile) : Serialize(defaults);
+                T candidate = Deserialize<T>(json);
+                validate?.Invoke(candidate);
+                WriteFile(filePath, json, replace: false);
             }
             catch (IOException) when (File.Exists(filePath))
             {
                 // Another instance has already created the configuration.
             }
+        }
+
+        internal static void WriteFile(string filePath, string json, bool replace)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(filePath)));
+            string temporaryPath = filePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+            try
+            {
+                using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write,
+                    FileShare.None, 4096, FileOptions.WriteThrough))
+                using (var writer = new StreamWriter(stream, Utf8))
+                {
+                    writer.Write(json);
+                    writer.Flush();
+                    stream.Flush(true);
+                }
+
+                if (replace)
+                {
+                    File.Replace(temporaryPath, filePath, filePath + ".bak");
+                }
+                else
+                {
+                    File.Move(temporaryPath, filePath);
+                }
+            }
             finally
             {
-                File.Delete(temporaryPath);
+                try
+                {
+                    File.Delete(temporaryPath);
+                }
+                catch (Exception error) when (error is IOException || error is UnauthorizedAccessException)
+                {
+                    Trace.TraceWarning("Could not clean up temporary configuration: {0}", error.Message);
+                }
             }
         }
     }

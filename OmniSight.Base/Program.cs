@@ -70,7 +70,7 @@ namespace OmniSight.Base
                         }
                     }
 
-                    using (var mainForm = new MainForm(bootstrapper.Machine))
+                    using (var mainForm = new MainForm(bootstrapper.Machine, bootstrapper.SystemConfiguration, bootstrapper.HealthMonitor))
                     {
                         WinForms.Run(mainForm);
                     }

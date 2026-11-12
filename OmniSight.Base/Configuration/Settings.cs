@@ -2,7 +2,7 @@
 
 namespace OmniSight.Base.Configuration
 {
-    internal sealed class SystemSettings
+    public sealed class SystemSettings
     {
         public bool WriteDebugLog { get; set; } = true;
         public LanguageType Language { get; set; } = LanguageType.KOREAN;

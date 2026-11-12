@@ -242,6 +242,38 @@
       "binding": ""
     },
     {
+      "key": "Text.TextBoxValidationExtensions.IntegerRequired",
+      "ko": "[{0}] 유효한 정수(숫자)로 입력해야 합니다.",
+      "en": "[{0}] Enter a valid integer.",
+      "zh": "[{0}] 必须输入有效的整数。",
+      "pl": "[{0}] Wprowadź prawidłową liczbę całkowitą.",
+      "binding": ""
+    },
+    {
+      "key": "Text.TextBoxValidationExtensions.NumberRequired",
+      "ko": "[{0}] 유효한 실수(소수점)로 입력해야 합니다.",
+      "en": "[{0}] Enter a valid decimal number.",
+      "zh": "[{0}] 必须输入有效的小数。",
+      "pl": "[{0}] Wprowadź prawidłową liczbę dziesiętną.",
+      "binding": ""
+    },
+    {
+      "key": "Text.TextBoxValidationExtensions.OutOfRange",
+      "ko": "[{0}] 허용 범위를 초과했습니다. (허용: {1} ~ {2})",
+      "en": "[{0}] Out of the allowed range. (Allowed: {1} ~ {2})",
+      "zh": "[{0}] 超出允许范围。(允许: {1} ~ {2})",
+      "pl": "[{0}] Poza dozwolonym zakresem. (Dozwolone: {1} ~ {2})",
+      "binding": ""
+    },
+    {
+      "key": "Text.TextBoxValidationExtensions.ValueRequired",
+      "ko": "[{0}] 값을 입력해야 합니다.",
+      "en": "[{0}] A value is required.",
+      "zh": "[{0}] 必须输入值。",
+      "pl": "[{0}] Wartość jest wymagana.",
+      "binding": ""
+    },
+    {
       "key": "UI.MessageDialogForm.btnCancel",
       "ko": "취소(&C)",
       "en": "Cancel(&C)",

@@ -10,7 +10,7 @@ FA 설비의 WinForms 시작 프로젝트입니다. **Visual Studio 2022 · .NET
 4. `OmniSight.Base.sln`을 열고 **Debug | x64**에서 F5를 누릅니다. 스플래시 뒤에 1920×1080 검은 메인 창이 뜹니다. `Alt+F4`로 종료합니다.
 5. `UI/MainForm`에 화면을 추가하고, `Application`에 운전 순서를 작성합니다. `ApplicationBootstrapper`와 `Devices/DeviceFactory`에서 해당 사이트가 사용하는 장치를 조립합니다.
 
-이 템플릿의 출처는 **OmniSight.Base v0.1.0**입니다. 새 사이트에도 출처 태그를 기록합니다. 공통 수정은 베이스의 수정 커밋을 사이트에서 검증해 적용합니다.
+이 템플릿의 출처는 [OmniSight.Base v0.2.0](https://github.com/pjbmylove2/OmniSight.Base/tree/v0.2.0)입니다. 새 사이트에도 출처 태그를 기록합니다. 공통 수정은 베이스의 수정 커밋을 사이트에서 검증해 적용합니다.
 
 ## 실행 데이터
 
@@ -99,6 +99,36 @@ DialogResult answer = MessageDialog.Show(
 
 `autoCloseSeconds`를 지정하면 시간이 지난 뒤 `OK` 창은 `OK`, `OKCancel` 창은 `Cancel`, `YesNo` 창은 `No`를 반환합니다. `log: logManager`를 넘기면 메시지도 로그에 기록합니다.
 
+## 설정 저장과 입력 검증
+
+실행 중인 `MainForm`의 `SystemConfiguration`에서 설정 복제본을 편집하고 `ApplyAndSave`를 호출합니다. 저장된 시스템 설정은 다음 실행 때 읽습니다.
+
+```csharp
+var edited = SystemConfiguration.GetClone();
+edited.WriteDebugLog = false;
+SystemConfiguration.ApplyAndSave(edited);
+```
+
+새 설정 파일은 `new JsonConfigProvider<설정형식>(파일경로, 검증메서드)`로 만듭니다. 검증 메서드는 값을 검사하고 잘못된 경우 예외를 던집니다. 처음에 `Load()`를 호출해 현재 설정을 읽고, 이후 `GetClone()`과 `ApplyAndSave()`로 편집합니다. 저장은 같은 폴더의 임시 파일을 원본과 교체하고 직전 파일을 `.bak`에 보관합니다. 다른 편집기가 파일을 갱신했다면 다시 불러온 뒤 편집합니다.
+
+숫자 입력란은 폼에서 초깃값을 넣은 다음 두 이벤트를 연결합니다.
+
+```csharp
+InputValidator.RevertInvalidNumericPaste(txtLimit, allowDecimal: true);
+txtLimit.KeyPress += (sender, e) =>
+    InputValidator.EnforceNumericInput(sender, e, allowDecimal: true);
+txtLimit.TextChanged += (sender, e) =>
+    InputValidator.RevertInvalidNumericPaste(sender, allowDecimal: true);
+
+var result = txtLimit.CheckDoubleRange("Limit", 0, 100);
+```
+
+`CheckIntRange`와 `CheckDoubleRange`는 최솟값·최댓값을 포함해 검사합니다. 소수점은 Windows의 현재 숫자 형식과 점을 지원합니다. 잘못된 숫자 붙여넣기는 직전 편집값으로 되돌립니다. 문자 입력에는 `EnforceTextInput`과 `RevertInvalidTextPaste`를 사용합니다.
+
+## 운전 상태
+
+실행 중인 `MainForm.HealthMonitor.Latest`에서 데이터 드라이브 여유·전체 바이트, 프로세스 작업 집합·전용 메모리·관리 힙, 로그 저장 장애·누락·우회 건수를 함께 읽습니다. 첫 표본 전에는 `null`이며, 드라이브를 읽을 수 없을 때는 `DriveError`에 이유가 들어갑니다. 기본 수집 간격은 30초이며, 시작 시와 이후 약 10분 간격으로 시스템 로그에 요약을 남깁니다. 앱 종료 시 수집을 정리합니다.
+
 ## Basler 사용
 
 기본 구성은 장치 없이 부팅합니다. 실제 Basler를 사용할 때는 [Basler pylon](https://docs.baslerweb.com/pylon-software-suite)의 x64 SDK·런타임과 카메라 드라이버를 설치합니다. 컴파일 기준으로 확인한 `Basler.Pylon.dll`의 파일 버전은 **5.2.0.13457**입니다.
@@ -126,4 +156,4 @@ msbuild Tests/RuntimeChecks/RuntimeChecks.csproj /restore /p:Configuration=Debug
 .\Tests\RuntimeChecks\bin\Debug\RuntimeChecks.exe
 ```
 
-테스트는 가상 장치의 초기화·시작·종료, 동시 로그 기록과 저장 장애 복구, 큐가 찼을 때 알람 우선 기록, 저장 폴더 구성과 기존 설정 복사, 스플래시 배치와 브랜딩, 네 언어의 시작 화면과 메시지 창을 확인합니다.
+테스트는 가상 장치의 초기화·시작·종료, 동시 로그 기록과 저장 장애 복구, 큐가 찼을 때 알람 우선 기록, 저장 폴더 구성과 기존 설정 복사, 스플래시 배치와 브랜딩, 네 언어의 시작 화면과 메시지 창, 설정 저장과 입력 검증, 운전 상태 수집을 확인합니다.

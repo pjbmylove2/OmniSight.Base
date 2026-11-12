@@ -27,6 +27,7 @@
     <Compile Include="PathChecks.cs" />
     <Compile Include="SplashBrandingChecks.cs" />
     <Compile Include="LocalizedUiChecks.cs" />
+    <Compile Include="BaseSystemChecks.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

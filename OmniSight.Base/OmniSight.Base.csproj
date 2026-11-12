@@ -59,8 +59,10 @@
     <Compile Include="Application\ApplicationBootstrapper.cs" />
     <Compile Include="Application\BuildInfo.cs" />
     <Compile Include="Application\Machine.cs" />
+    <Compile Include="Application\RuntimeHealthMonitor.cs" />
     <Compile Include="Configuration\PathManager.cs" />
     <Compile Include="Configuration\JsonConfigProvider.cs" />
+    <Compile Include="Configuration\JsonConfigProviderOfT.cs" />
     <Compile Include="Configuration\Settings.cs" />
     <Compile Include="Configuration\SafePathSegment.cs" />
     <Compile Include="Devices\DeviceFactory.cs" />
@@ -82,6 +84,8 @@
     <Compile Include="UI\Utils\FontManager.cs" />
     <Compile Include="UI\Utils\ILocalizedView.cs" />
     <Compile Include="UI\Utils\UiLocalization.cs" />
+    <Compile Include="UI\Utils\InputValidator.cs" />
+    <Compile Include="UI\Utils\TextBoxValidationExtensions.cs" />
     <Compile Include="UI\Utils\MessageDialog.cs" />
     <Compile Include="UI\Utils\MessageSeverity.cs" />
     <Compile Include="UI\Utils\MainWindowDialogPlacement.cs" />

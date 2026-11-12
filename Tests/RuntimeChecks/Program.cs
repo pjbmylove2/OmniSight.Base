@@ -40,7 +40,8 @@ internal static class Program
             PathChecks.Run(root);
             SplashBrandingChecks.Run(root);
             LocalizedUiChecks.Run(root);
-            Console.WriteLine("PASS: machine lifecycle (6), logging (3), storage layout and settings migration, and MainForm/StartupForm layout, splash branding and four-language dialogs.");
+            BaseSystemChecks.Run(root);
+            Console.WriteLine("PASS: machine lifecycle (6), logging (3), storage layout and settings migration, and MainForm/StartupForm layout, splash branding, four-language dialogs, config saves, input validation and runtime health.");
             return 0;
         }
         catch (Exception error)

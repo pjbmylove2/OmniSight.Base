@@ -18,10 +18,13 @@ namespace OmniSight.Base.Application
 
         public ApplicationBootstrapper(PathManager paths)
         {
-            _paths = paths;
+            _paths = paths ?? throw new ArgumentNullException(nameof(paths));
+            SystemConfiguration = new JsonConfigProvider<SystemSettings>(SystemSettingsPath);
         }
 
         public Machine Machine { get; private set; }
+        public RuntimeHealthMonitor HealthMonitor { get; private set; }
+        public JsonConfigProvider<SystemSettings> SystemConfiguration { get; }
 
         private string SystemSettingsPath => Path.Combine(_paths.SystemPath, "SystemGeneral.json");
 
@@ -55,14 +58,14 @@ namespace OmniSight.Base.Application
                 token.ThrowIfCancellationRequested();
 
                 progress.Report((66, LocalText.Get("Text.StartupForm.LoadSettings", "설정을 읽고 있습니다...")));
-                var system = JsonConfigProvider.LoadOrCreate(SystemSettingsPath, new SystemSettings(), _paths.PreviousConfigPath);
+                var system = SystemConfiguration.Load(_paths.PreviousConfigPath);
                 LocalizationManager.ChangeLanguage(system.Language);
                 _log.WriteDebugLog = system.WriteDebugLog;
-                var display = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.SystemPath, "SplashBranding.json"), new SplashBranding(), _paths.PreviousConfigPath);
+                var display = new JsonConfigProvider<SplashBranding>(Path.Combine(_paths.SystemPath, "SplashBranding.json")).Load(_paths.PreviousConfigPath);
                 _splashLogo = LoadSplashLogo(display.LogoPath);
                 branding.Report(display);
-                var camera = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.CameraDevicePath, "Camera.json"), new CameraSettings(), _paths.PreviousConfigPath);
-                camera.Validate();
+                var camera = new JsonConfigProvider<CameraSettings>(Path.Combine(_paths.CameraDevicePath, "Camera.json"),
+                    settings => settings.Validate()).Load(_paths.PreviousConfigPath);
                 _log.Debug("Configuration loaded.");
                 _log.System($"Camera mode: {camera.Mode}.");
                 token.ThrowIfCancellationRequested();
@@ -70,6 +73,8 @@ namespace OmniSight.Base.Application
                 progress.Report((95, LocalText.Get("Text.StartupForm.InitializeDevices", "장비를 초기화하고 있습니다...")));
                 Machine = new Machine(DeviceFactory.Create(camera), _log);
                 Machine.Initialize(token);
+                token.ThrowIfCancellationRequested();
+                HealthMonitor = new RuntimeHealthMonitor(_paths.DataPath, _log);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
             {
@@ -129,7 +134,14 @@ namespace OmniSight.Base.Application
         {
             try
             {
-                Machine?.Dispose();
+                try
+                {
+                    HealthMonitor?.Dispose();
+                }
+                finally
+                {
+                    Machine?.Dispose();
+                }
             }
             finally
             {
