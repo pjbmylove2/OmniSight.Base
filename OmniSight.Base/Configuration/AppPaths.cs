@@ -27,7 +27,6 @@ namespace OmniSight.Base.Configuration
         public void CreateDirectories()
         {
             Directory.CreateDirectory(Config);
-            Directory.CreateDirectory(Logs);
             Directory.CreateDirectory(Data);
         }
     }

@@ -28,10 +28,12 @@ internal static class Program
                 DeviceFaultStopsTheRun(log);
                 StopFailureRemainsFaulted(log);
             }
-            Check(Directory.EnumerateFiles(root, "*.log").Any(path =>
+            Check(Directory.EnumerateFiles(root, "*_Alarm.log", SearchOption.AllDirectories).Any(path =>
                 File.ReadAllText(path).Contains("Machine initialization failed.")), "alarm written");
             MainFormDefaults();
-            Console.WriteLine("PASS: six machine lifecycle scenarios, log flush and black 1920x1080 designer form.");
+            StartupFormDefaults();
+            LoggingChecks.Run(root);
+            Console.WriteLine("PASS: machine lifecycle (6), logging (3), and MainForm/StartupForm layout.");
         }
         finally
         {
@@ -142,6 +144,21 @@ internal static class Program
         {
             Check(form.ClientSize == new Size(1920, 1080) && form.BackColor == Color.Black &&
                   form.FormBorderStyle == FormBorderStyle.None && form.Controls.Count == 0, "blank main form");
+        }
+    }
+
+    private static void StartupFormDefaults()
+    {
+        using (var form = new StartupForm())
+        {
+            Control hero = form.Controls["pnlHero"];
+            Control panel = form.Controls["pnlProgress"];
+            var progress = (StartupProgressBar)panel.Controls["progressBoot"];
+            Check(form.ClientSize == new Size(650, 420) && form.FormBorderStyle == FormBorderStyle.None &&
+                  hero is StartupBrandPanel && hero.Height == 294 && panel.BackColor == Color.FromArgb(47, 47, 47),
+                  "reference splash layout");
+            Check(progress.Bounds == new Rectangle(25, 82, 599, 9) && progress.IsMarquee &&
+                  panel.Controls["btnCancel"].Text == "취소", "reference progress and cancel controls");
         }
     }
 

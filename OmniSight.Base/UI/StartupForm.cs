@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Drawing;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using OmniSight.Base.Application;
 using OmniSight.Base.Configuration;
@@ -10,19 +12,19 @@ namespace OmniSight.Base.UI
     {
         private readonly ApplicationBootstrapper _bootstrapper;
         private CancellationTokenSource _startupCancellation;
-        private bool _initializing;
         private bool _startupFailed;
 
         public StartupForm()
         {
             InitializeComponent();
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
         }
 
         internal StartupForm(ApplicationBootstrapper bootstrapper) : this()
         {
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
             Text = BuildInfo.AppId + " Startup";
-            lblTitle.Text = BuildInfo.AppId;
+            lblProductName.Text = BuildInfo.AppId;
             lblVersion.Text = BuildInfo.DisplayText;
         }
 
@@ -34,89 +36,110 @@ namespace OmniSight.Base.UI
                 return;
             }
 
-            _initializing = true;
-            _startupCancellation = new CancellationTokenSource();
-            DialogResult outcome = DialogResult.None;
-            try
+            using (var cancellation = new CancellationTokenSource())
             {
-                await _bootstrapper.InitializeAsync(new Progress<string>(UpdateStatus),
-                    new Progress<SplashBranding>(ApplyBranding), _startupCancellation.Token);
-                outcome = _startupCancellation.IsCancellationRequested ? DialogResult.Cancel : DialogResult.OK;
-            }
-            catch (Exception) when (_startupCancellation.IsCancellationRequested)
-            {
-                outcome = DialogResult.Cancel;
-            }
-            catch (Exception error)
-            {
-                _startupFailed = true;
-                Text = BuildInfo.AppId + " Startup failed";
-                lblStatus.Text = "Startup failed. " + error.Message;
-                lblStatus.ForeColor = System.Drawing.Color.Salmon;
-                progressStartup.Visible = false;
-                btnClose.Text = "Close";
-                btnClose.Enabled = true;
-            }
-            finally
-            {
-                _initializing = false;
-                _startupCancellation.Dispose();
-                _startupCancellation = null;
-            }
+                _startupCancellation = cancellation;
+                DialogResult outcome;
+                try
+                {
+                    await _bootstrapper.InitializeAsync(new Progress<(int Percent, string Status)>(UpdateStatus),
+                        new Progress<SplashBranding>(ApplyBranding), cancellation.Token);
+                    if (IsDisposed || Disposing)
+                    {
+                        return;
+                    }
 
-            if (outcome != DialogResult.None)
-            {
-                DialogResult = outcome;
+                    cancellation.Token.ThrowIfCancellationRequested();
+                    progressBoot.Value = 100;
+                    progressBoot.IsMarquee = false;
+                    lblStatusCaption.Text = "초기화 완료 (100%)";
+                    lblStatus.Text = "프로그램 초기화가 완료되었습니다.";
+                    await Task.Delay(500, cancellation.Token);
+                    outcome = DialogResult.OK;
+                }
+                catch (Exception) when (cancellation.IsCancellationRequested)
+                {
+                    outcome = DialogResult.Cancel;
+                }
+                catch (Exception error)
+                {
+                    if (!IsDisposed && !Disposing)
+                    {
+                        ShowStartupFailure(error);
+                    }
+                    return;
+                }
+                finally
+                {
+                    _startupCancellation = null;
+                }
+
+                if (!IsDisposed && !Disposing)
+                {
+                    DialogResult = cancellation.IsCancellationRequested ? DialogResult.Cancel : outcome;
+                }
             }
         }
 
-        private void UpdateStatus(string status)
+        private bool CanUpdateProgress()
         {
-            if (_initializing && !_startupCancellation.IsCancellationRequested)
+            return !IsDisposed && !Disposing && _startupCancellation != null && !_startupCancellation.IsCancellationRequested;
+        }
+
+        private void UpdateStatus((int Percent, string Status) progress)
+        {
+            if (CanUpdateProgress() && progressBoot.Value < 100)
             {
-                lblStatus.Text = status;
+                progressBoot.Value = progress.Percent;
+                lblStatusCaption.Text = $"초기화 중 ({progress.Percent}%)";
+                lblStatus.Text = progress.Status;
             }
         }
 
         private void ApplyBranding(SplashBranding branding)
         {
-            if (_initializing)
+            if (CanUpdateProgress())
             {
-                lblTitle.Text = string.IsNullOrWhiteSpace(branding.Title) ? BuildInfo.AppId : branding.Title;
+                lblProductName.Text = string.IsNullOrWhiteSpace(branding.Title) ? BuildInfo.AppId : branding.Title;
                 lblSubtitle.Text = branding.Subtitle;
             }
         }
 
-        private void CloseRequested(object sender, EventArgs e)
+        private void ShowStartupFailure(Exception error)
         {
-            if (_initializing)
-            {
-                CancelStartup();
-                return;
-            }
+            _startupFailed = true;
+            Text = BuildInfo.AppId + " Startup failed";
+            lblStatusCaption.Text = "초기화 실패";
+            lblStatus.Text = error.Message;
+            lblStatus.ForeColor = Color.Salmon;
+            progressBoot.IsMarquee = false;
+            progressBoot.Visible = false;
+            lblProgressHint.Text = "오류를 확인한 뒤 창을 닫으십시오.";
+            btnCancel.Text = "닫기";
+        }
 
-            DialogResult = DialogResult.Abort;
+        private void BtnCancel_Click(object sender, EventArgs e)
+        {
+            Close();
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             base.OnFormClosing(e);
-            if (_initializing)
+            if (_startupCancellation != null)
             {
                 e.Cancel = true;
-                CancelStartup();
+                _startupCancellation.Cancel();
+                btnCancel.Enabled = false;
+                progressBoot.IsMarquee = false;
+                lblStatusCaption.Text = "초기화 취소 중";
+                lblStatus.Text = "현재 초기화 단계가 끝나면 창이 닫힙니다.";
+                lblProgressHint.Text = string.Empty;
             }
             else if (_startupFailed)
             {
                 DialogResult = DialogResult.Abort;
             }
-        }
-
-        private void CancelStartup()
-        {
-            _startupCancellation.Cancel();
-            btnClose.Enabled = false;
-            lblStatus.Text = "Canceling startup…";
         }
     }
 }

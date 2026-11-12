@@ -21,10 +21,12 @@ FA 설비의 WinForms 시작 프로젝트입니다. **Visual Studio 2022 · .NET
 | `Config/SystemGeneral.json` | 디버그 로그 사용 여부 |
 | `Config/Camera.json` | 카메라 사용 여부, 시리얼 번호, 트리거 방식 |
 | `Config/SplashBranding.json` | 스플래시 제목과 부제 |
-| `Logs` | UTC 날짜별 시스템·알람·디버그 로그 |
+| `Logs` | 로컬 날짜별 로그. 예를 들어 시스템 로그는 `Logs/yyyy/MM/dd/yyyy-MM-dd_System.log`에 저장 |
 | `Data` | 사이트 운전 데이터 |
 
-기존 JSON은 보존합니다. 잘못된 JSON이나 장비 초기화 실패는 스플래시에 표시되며, 로그 폴더를 준비한 뒤 발생한 오류는 로그에 기록합니다. 현장 장비 설정과 운영 데이터는 해당 사이트에서 관리합니다.
+기존 JSON과 평면 날짜 로그 파일은 보존합니다. 잘못된 JSON이나 장비 초기화 실패는 스플래시와 알람 로그에서 확인할 수 있습니다.
+
+`LogManager`는 백그라운드에서 UTF-8 BOM으로 기록합니다. 일반 큐와 알람·결과 우선 큐를 따로 두며, `Health`에서 큐 초과 누락, 기록 실패, 우회 기록 건수를 확인할 수 있습니다. 기본 저장 경로에서 쓰기가 실패하면 `%TEMP%\{AssemblyName}\LogFallback\{SessionId}`에 기록합니다. `Flush`로 큐 처리를 기다린 뒤 실제 기록 건수와 실패 건수를 확인할 수 있습니다.
 
 `Version.props`의 제품 버전과 성공한 빌드의 로컬 카운터로 EXE 파일 버전을 만듭니다. 카운터는 체크아웃과 빌드 구성별로 관리합니다. 변경 없는 F5가 기존 EXE를 실행하거나 컴파일에 실패하면 번호를 유지합니다.
 
@@ -55,4 +57,4 @@ msbuild Tests/RuntimeChecks/RuntimeChecks.csproj /restore /p:Configuration=Debug
 .\Tests\RuntimeChecks\bin\Debug\RuntimeChecks.exe
 ```
 
-테스트는 가상 장치로 초기화 실패 시 역순 정리, 중복 시작, 준비되지 않은 장치의 시작 차단, 시작 실패 복구, 단선, 정지 실패와 종료를 확인합니다.
+테스트는 가상 장치의 초기화·시작·종료, 동시 로그 기록과 저장 장애 복구, 큐가 찼을 때 알람 우선 기록, 메인 화면과 스플래시 배치를 확인합니다.
