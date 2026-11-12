@@ -33,7 +33,8 @@ internal static class Program
             MainFormDefaults();
             StartupFormDefaults();
             LoggingChecks.Run(root);
-            Console.WriteLine("PASS: machine lifecycle (6), logging (3), and MainForm/StartupForm layout.");
+            PathChecks.Run(root);
+            Console.WriteLine("PASS: machine lifecycle (6), logging (3), storage layout and settings migration, and MainForm/StartupForm layout.");
         }
         finally
         {

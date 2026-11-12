@@ -24,6 +24,7 @@
     </ProjectReference>
     <Compile Include="Program.cs" />
     <Compile Include="LoggingChecks.cs" />
+    <Compile Include="PathChecks.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

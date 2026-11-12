@@ -14,13 +14,14 @@ namespace OmniSight.Base.Configuration
             Converters = { new StringEnumConverter { AllowIntegerValues = false } }
         };
 
-        public static T LoadOrCreate<T>(string filePath, T defaults) where T : class
+        public static T LoadOrCreate<T>(string filePath, T defaults, string previousConfigPath) where T : class
         {
             try
             {
                 if (!File.Exists(filePath))
                 {
-                    WriteDefaults(filePath, defaults);
+                    string previousFile = Path.Combine(previousConfigPath, Path.GetFileName(filePath));
+                    CreateConfig(filePath, previousFile, defaults);
                 }
 
                 var value = JsonConvert.DeserializeObject<T>(File.ReadAllText(filePath, Utf8), Settings);
@@ -33,12 +34,20 @@ namespace OmniSight.Base.Configuration
             }
         }
 
-        private static void WriteDefaults<T>(string filePath, T defaults)
+        private static void CreateConfig<T>(string filePath, string previousFile, T defaults)
         {
             string temporaryPath = filePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
             try
             {
-                File.WriteAllText(temporaryPath, JsonConvert.SerializeObject(defaults, Formatting.Indented, Settings), Utf8);
+                if (File.Exists(previousFile))
+                {
+                    File.Copy(previousFile, temporaryPath);
+                }
+                else
+                {
+                    File.WriteAllText(temporaryPath, JsonConvert.SerializeObject(defaults, Formatting.Indented, Settings), Utf8);
+                }
+
                 File.Move(temporaryPath, filePath);
             }
             catch (IOException) when (File.Exists(filePath))

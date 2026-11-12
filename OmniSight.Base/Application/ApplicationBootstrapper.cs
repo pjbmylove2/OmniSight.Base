@@ -10,10 +10,10 @@ namespace OmniSight.Base.Application
 {
     internal sealed class ApplicationBootstrapper : IDisposable
     {
-        private readonly AppPaths _paths;
+        private readonly PathManager _paths;
         private LogManager _log;
 
-        public ApplicationBootstrapper(AppPaths paths)
+        public ApplicationBootstrapper(PathManager paths)
         {
             _paths = paths;
         }
@@ -30,17 +30,25 @@ namespace OmniSight.Base.Application
             try
             {
                 progress.Report((33, "폴더와 로그를 준비하고 있습니다..."));
-                _log = new LogManager(_paths.Logs, Path.Combine(Path.GetTempPath(), BuildInfo.AppId, "LogFallback"));
-                _paths.CreateDirectories();
+                _log = new LogManager(_paths.LogPath, _paths.FallbackLogPath);
+                try
+                {
+                    _paths.CreateDirectories();
+                }
+                catch (Exception error) when (error is IOException || error is UnauthorizedAccessException)
+                {
+                    throw new IOException($"저장 폴더를 만들 수 없습니다. {_paths.RootPath}{Environment.NewLine}{error.Message}", error);
+                }
+                _log.System($"[Boot] Storage root: {_paths.RootPath}");
                 _log.System($"{BuildInfo.AppId} started. {BuildInfo.DisplayText}");
                 token.ThrowIfCancellationRequested();
 
                 progress.Report((66, "설정을 읽고 있습니다..."));
-                var display = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.Config, "SplashBranding.json"), new SplashBranding());
+                var display = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.SystemPath, "SplashBranding.json"), new SplashBranding(), _paths.PreviousConfigPath);
                 branding.Report(display);
-                var system = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.Config, "SystemGeneral.json"), new SystemSettings());
+                var system = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.SystemPath, "SystemGeneral.json"), new SystemSettings(), _paths.PreviousConfigPath);
                 _log.WriteDebugLog = system.WriteDebugLog;
-                var camera = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.Config, "Camera.json"), new CameraSettings());
+                var camera = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.CameraDevicePath, "Camera.json"), new CameraSettings(), _paths.PreviousConfigPath);
                 camera.Validate();
                 _log.Debug("Configuration loaded.");
                 _log.System($"Camera mode: {camera.Mode}.");

@@ -20,7 +20,7 @@ namespace OmniSight.Base
 
             try
             {
-                var paths = new AppPaths(BuildInfo.AppId);
+                var paths = new PathManager(BuildInfo.AppId);
                 using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
                 using (var instance = new Mutex(false, $@"Global\{identity.User.Value}.{BuildInfo.AppId.ToUpperInvariant()}"))
                 {
@@ -46,7 +46,7 @@ namespace OmniSight.Base
             }
         }
 
-        private static int Run(AppPaths paths)
+        private static int Run(PathManager paths)
         {
             using (var bootstrapper = new ApplicationBootstrapper(paths))
             {

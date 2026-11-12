@@ -59,7 +59,7 @@
     <Compile Include="Application\ApplicationBootstrapper.cs" />
     <Compile Include="Application\BuildInfo.cs" />
     <Compile Include="Application\Machine.cs" />
-    <Compile Include="Configuration\AppPaths.cs" />
+    <Compile Include="Configuration\PathManager.cs" />
     <Compile Include="Configuration\JsonConfigProvider.cs" />
     <Compile Include="Configuration\Settings.cs" />
     <Compile Include="Configuration\SafePathSegment.cs" />
