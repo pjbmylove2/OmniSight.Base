@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,6 +15,7 @@ namespace OmniSight.Base.UI
         private readonly ApplicationBootstrapper _bootstrapper;
         private CancellationTokenSource _startupCancellation;
         private bool _startupFailed;
+        private string _logoText;
 
         public StartupForm()
         {
@@ -98,10 +101,83 @@ namespace OmniSight.Base.UI
 
         private void ApplyBranding(SplashBranding branding)
         {
-            if (CanUpdateProgress())
+            if (!CanUpdateProgress())
             {
-                lblProductName.Text = string.IsNullOrWhiteSpace(branding.Title) ? BuildInfo.AppId : branding.Title;
-                lblSubtitle.Text = branding.Subtitle;
+                return;
+            }
+
+            lblProductName.Text = TextOrDefault(branding.ProductName, TextOrDefault(branding.Title, BuildInfo.AppId));
+            lblSubtitle.Text = branding.Subtitle;
+            lblSiteName.Text = TextOrDefault(branding.SiteName, lblSiteName.Text);
+            lblEquipmentName.Text = TextOrDefault(branding.EquipmentName, lblEquipmentName.Text);
+            lblCompanyName.Text = TextOrDefault(branding.CompanyName, lblCompanyName.Text);
+            lblFooter.Text = TextOrDefault(branding.FooterText, lblFooter.Text);
+            pnlHero.PrimaryColor = ParseColor(branding.AccentColor, pnlHero.PrimaryColor);
+            pnlHero.SecondaryColor = ParseColor(branding.BrandPanelColor, pnlHero.SecondaryColor);
+            _logoText = branding.LogoText?.Trim();
+            picLogo.Image = _bootstrapper.TakeSplashLogo();
+            picLogo.AccessibleName = TextOrDefault(_logoText, lblCompanyName.Text) + " 로고";
+            picLogo.Invalidate();
+        }
+
+        private static string TextOrDefault(string text, string fallback)
+        {
+            return string.IsNullOrWhiteSpace(text) ? fallback : text.Trim();
+        }
+
+        private static Color ParseColor(string value, Color fallback)
+        {
+            value = value?.Trim();
+            return value != null && value.Length == 7 && value[0] == '#' &&
+                int.TryParse(value.Substring(1), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out int rgb)
+                ? Color.FromArgb(unchecked((int)0xFF000000) | rgb)
+                : fallback;
+        }
+
+        private void PicLogo_Paint(object sender, PaintEventArgs e)
+        {
+            if (picLogo.Image != null || string.IsNullOrWhiteSpace(_logoText))
+            {
+                return;
+            }
+
+            Graphics graphics = e.Graphics;
+            GraphicsState state = graphics.Save();
+            try
+            {
+                graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                graphics.ScaleTransform(picLogo.ClientSize.Width / 112f, picLogo.ClientSize.Height / 112f);
+                using (var halo = new SolidBrush(Color.FromArgb(42, Color.White)))
+                using (var outline = new Pen(Color.FromArgb(229, Color.White), 3F))
+                using (var lens = new SolidBrush(Color.FromArgb(30, 191, 93)))
+                using (var font = new Font("Segoe UI", 21F, FontStyle.Bold, GraphicsUnit.Pixel))
+                using (var format = new StringFormat
+                {
+                    Alignment = StringAlignment.Center,
+                    LineAlignment = StringAlignment.Center,
+                    FormatFlags = StringFormatFlags.NoWrap,
+                    Trimming = StringTrimming.EllipsisCharacter
+                })
+                {
+                    graphics.FillEllipse(halo, 9, 8, 94, 94);
+                    graphics.DrawEllipse(outline, 18, 17, 76, 76);
+                    graphics.FillEllipse(lens, 31, 30, 50, 50);
+                    graphics.DrawString(_logoText, font, Brushes.White, new RectangleF(24, 29, 64, 52), format);
+                }
+            }
+            finally
+            {
+                graphics.Restore(state);
+            }
+        }
+
+        private void ReleaseSplashLogo()
+        {
+            if (picLogo?.Image != null)
+            {
+                Image logo = picLogo.Image;
+                picLogo.Image = null;
+                logo.Dispose();
             }
         }
 

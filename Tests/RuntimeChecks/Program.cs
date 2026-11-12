@@ -34,7 +34,8 @@ internal static class Program
             StartupFormDefaults();
             LoggingChecks.Run(root);
             PathChecks.Run(root);
-            Console.WriteLine("PASS: machine lifecycle (6), logging (3), storage layout and settings migration, and MainForm/StartupForm layout.");
+            SplashBrandingChecks.Run(root);
+            Console.WriteLine("PASS: machine lifecycle (6), logging (3), storage layout and settings migration, and MainForm/StartupForm layout and splash branding.");
         }
         finally
         {

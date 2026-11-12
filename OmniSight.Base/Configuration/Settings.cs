@@ -38,6 +38,15 @@ namespace OmniSight.Base.Configuration
     internal sealed class SplashBranding
     {
         public string Title { get; set; } = "";
+        public string ProductName { get; set; }
         public string Subtitle { get; set; } = "FA application starter";
+        public string SiteName { get; set; }
+        public string EquipmentName { get; set; }
+        public string CompanyName { get; set; }
+        public string FooterText { get; set; }
+        public string LogoText { get; set; }
+        public string LogoPath { get; set; }
+        public string AccentColor { get; set; }
+        public string BrandPanelColor { get; set; }
     }
 }

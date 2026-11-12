@@ -25,7 +25,7 @@ FA 설비의 WinForms 시작 프로젝트입니다. **Visual Studio 2022 · .NET
 | 위치 | 용도 |
 |---|---|
 | `SYSTEM/SystemGeneral.json` | 디버그 로그 사용 여부 |
-| `SYSTEM/SplashBranding.json` | 스플래시 제목과 부제 |
+| `SYSTEM/SplashBranding.json` | 시작 화면의 문구, 로고, 배경색 |
 | `MODEL` | 모델·레시피 |
 | `LOG` | 로컬 날짜별 로그. 예를 들어 `LOG/yyyy/MM/dd/yyyy-MM-dd_System.log` |
 | `DATA` | 사이트 운전 데이터 |
@@ -38,6 +38,29 @@ FA 설비의 WinForms 시작 프로젝트입니다. **Visual Studio 2022 · .NET
 `LogManager`는 백그라운드에서 UTF-8 BOM으로 기록합니다. 일반 큐와 알람·결과 우선 큐를 따로 두며, `Health`에서 큐 초과 누락, 기록 실패, 우회 기록 건수를 확인할 수 있습니다. 기본 저장 경로에서 쓰기가 실패하면 `%TEMP%\{AssemblyName}\LogFallback\{SessionId}`에 기록합니다. `Flush`로 큐 처리를 기다린 뒤 실제 기록 건수와 실패 건수를 확인할 수 있습니다.
 
 `Version.props`의 제품 버전과 성공한 빌드의 로컬 카운터로 EXE 파일 버전을 만듭니다. 카운터는 체크아웃과 빌드 구성별로 관리합니다. 변경 없는 F5가 기존 EXE를 실행하거나 컴파일에 실패하면 번호를 유지합니다.
+
+## 시작 화면 설정
+
+`SYSTEM/SplashBranding.json`을 수정하면 다음 실행 때 적용합니다.
+
+```json
+{
+  "ProductName": "OmniSight",
+  "Subtitle": "Vision Inspection",
+  "SiteName": "VISION INSPECTION SYSTEM",
+  "EquipmentName": "비전 검사 장비",
+  "CompanyName": "OmniSight",
+  "FooterText": "Industrial Vision Systems",
+  "LogoText": "OS",
+  "LogoPath": "Config/SplashLogo.png",
+  "AccentColor": "#2752F3",
+  "BrandPanelColor": "#1E43E2"
+}
+```
+
+- `ProductName`이 비어 있으면 이전 설정의 `Title`을 사용하고, 둘 다 비어 있으면 `AssemblyName`을 표시합니다.
+- `LogoPath`에는 절대 경로를 지정할 수 있습니다. 상대 경로는 저장 폴더 루트에서 먼저 찾고, 거기에 파일이 없으면 실행 파일 폴더에서 찾습니다. 파일이 없거나 읽기 실패하면 `LogoText`로 대체합니다.
+- 두 색상은 상단 배경의 그라데이션에 적용합니다. `#RRGGBB` 형식으로 지정하며, 값이 없거나 잘못됐으면 디자이너 색을 사용합니다.
 
 ## Basler 사용
 
@@ -66,4 +89,4 @@ msbuild Tests/RuntimeChecks/RuntimeChecks.csproj /restore /p:Configuration=Debug
 .\Tests\RuntimeChecks\bin\Debug\RuntimeChecks.exe
 ```
 
-테스트는 가상 장치의 초기화·시작·종료, 동시 로그 기록과 저장 장애 복구, 큐가 찼을 때 알람 우선 기록, 저장 폴더 구성과 기존 설정 복사, 메인 화면과 스플래시 배치를 확인합니다.
+테스트는 가상 장치의 초기화·시작·종료, 동시 로그 기록과 저장 장애 복구, 큐가 찼을 때 알람 우선 기록, 저장 폴더 구성과 기존 설정 복사, 메인 화면과 스플래시 배치 및 브랜딩을 확인합니다.

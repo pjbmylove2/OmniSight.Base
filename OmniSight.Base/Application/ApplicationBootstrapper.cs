@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace OmniSight.Base.Application
     {
         private readonly PathManager _paths;
         private LogManager _log;
+        private Bitmap _splashLogo;
 
         public ApplicationBootstrapper(PathManager paths)
         {
@@ -45,6 +47,7 @@ namespace OmniSight.Base.Application
 
                 progress.Report((66, "설정을 읽고 있습니다..."));
                 var display = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.SystemPath, "SplashBranding.json"), new SplashBranding(), _paths.PreviousConfigPath);
+                _splashLogo = LoadSplashLogo(display.LogoPath);
                 branding.Report(display);
                 var system = JsonConfigProvider.LoadOrCreate(Path.Combine(_paths.SystemPath, "SystemGeneral.json"), new SystemSettings(), _paths.PreviousConfigPath);
                 _log.WriteDebugLog = system.WriteDebugLog;
@@ -70,6 +73,43 @@ namespace OmniSight.Base.Application
             }
         }
 
+        // The splash owns the returned bitmap. Dispose releases it here if startup is canceled before it is taken.
+        public Bitmap TakeSplashLogo()
+        {
+            return Interlocked.Exchange(ref _splashLogo, null);
+        }
+
+        private Bitmap LoadSplashLogo(string configuredPath)
+        {
+            if (string.IsNullOrWhiteSpace(configuredPath))
+            {
+                return null;
+            }
+
+            try
+            {
+                string path = configuredPath.Trim();
+                if (!Path.IsPathRooted(path))
+                {
+                    string storagePath = Path.Combine(_paths.RootPath, path);
+                    path = File.Exists(storagePath) ? storagePath : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
+                }
+
+                using (var stream = File.OpenRead(path))
+                using (var image = Image.FromStream(stream))
+                {
+                    return new Bitmap(image);
+                }
+            }
+            catch (Exception error) when (error is IOException || error is UnauthorizedAccessException ||
+                                          error is ArgumentException || error is NotSupportedException ||
+                                          error is OutOfMemoryException || error is System.Runtime.InteropServices.ExternalException)
+            {
+                _log.System("[Splash] Logo image could not be loaded: " + error.Message);
+                return null;
+            }
+        }
+
         public void ReportApplicationError(Exception error)
         {
             _log?.Alarm("Application error.", error);
@@ -83,6 +123,7 @@ namespace OmniSight.Base.Application
             }
             finally
             {
+                TakeSplashLogo()?.Dispose();
                 if (_log != null)
                 {
                     _log.System("Application stopped.");

@@ -23,6 +23,7 @@
         {
             if (disposing)
             {
+                ReleaseSplashLogo();
                 if (components != null) components.Dispose();
             }
             base.Dispose(disposing);
@@ -179,6 +180,7 @@
             this.picLogo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.picLogo.TabIndex = 0;
             this.picLogo.TabStop = false;
+            this.picLogo.Paint += new System.Windows.Forms.PaintEventHandler(this.PicLogo_Paint);
             //
             // lblSiteName
             //
